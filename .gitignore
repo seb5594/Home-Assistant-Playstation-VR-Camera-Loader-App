@@ -1,0 +1,4 @@
+.engine/
+__pycache__/
+*.py[cod]
+**/data/options.json
