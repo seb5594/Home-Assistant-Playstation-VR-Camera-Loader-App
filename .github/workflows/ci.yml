@@ -1,0 +1,43 @@
+name: Validate and release app
+
+on:
+  push:
+    branches: [main, dev]
+    tags: ['v*']
+  pull_request:
+  schedule:
+    - cron: '23 4 * * 1' # Weekly: refreshes badge metrics and README values.
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: Create the release as a draft for review
+        type: boolean
+        default: false
+
+permissions:
+  actions: read # Lets the README refresh see whether the workflow has run.
+  contents: write
+  packages: write
+
+jobs:
+  pipeline:
+    # Repository secrets are not passed to untrusted fork pull requests.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: seb5594/hass-workflows
+          ref: 8064fc1fe6d35fde0ef0f3aeccb248cc6f3f87f4
+          token: ${{ secrets.ORCHESTRATION_PAT }}
+          path: .engine
+          persist-credentials: false
+      - uses: ./.engine/.actions/project
+        with:
+          token: ${{ github.token }}
+          draft: ${{ inputs.draft }}
+          catalog-token: ${{ secrets.ORCHESTRATION_PAT }}
