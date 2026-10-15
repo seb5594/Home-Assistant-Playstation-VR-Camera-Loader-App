@@ -1,12 +1,18 @@
 # Sony PlayStation VR Camera Loader
 
 <!-- badges:begin (generated from project metadata) -->
-[![version](https://img.shields.io/static/v1?label=version&message=1.0.0--beta4&color=1877A5&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases) [![released](https://img.shields.io/github/release-date-pre/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=released&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases) [![build](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/ci.yml?branch=main&label=build&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/ci.yml) [![tests](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/tests.yml?branch=main&label=tests&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/tests.yml)<br>
-[![stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=stars&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/stargazers) [![issues](https://img.shields.io/github/issues/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=issues&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/issues) [![updated](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=updated&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/commits/main)<br>
-![arch](https://img.shields.io/static/v1?label=arch&message=amd64%20%C2%B7%20aarch64&color=157F71&style=flat)<br>
-![mounts](https://img.shields.io/static/v1?label=mounts&message=app%20config&color=157F71&style=flat)<br>
-![stage](https://img.shields.io/static/v1?label=stage&message=experimental&color=C05621&style=flat)<br>
-[![Home Assistant](https://img.shields.io/static/v1?label=Home%20Assistant&message=Add%20app%20repository&color=18BCF2&style=flat&logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps)
+[![Version](https://img.shields.io/badge/version-1.0.0-beta4-1877A5?style=for-the-badge)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/ci.yml?branch=main&label=builds)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/ci.yml)
+[![Release asset downloads](https://img.shields.io/github/downloads/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/total?label=release%20downloads)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases)
+[![Stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=stars)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=updated)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/commits/main)
+
+![amd64](https://img.shields.io/badge/amd64-supported-157F71?style=flat-square) ![aarch64](https://img.shields.io/badge/aarch64-supported-157F71?style=flat-square)
+![stage](https://img.shields.io/badge/stage-experimental-2F855A?style=flat-square) ![mount](https://img.shields.io/badge/mount-local%20disks-157F71?style=flat-square) ![ingress](https://img.shields.io/badge/ingress-enabled-7C3AED?style=flat-square)
+
+[![Add to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps)
+[![Buy Me a Coffee](https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://buymeacoffee.com/seb5594)
+[![PayPal](https://img.shields.io/badge/Support-PayPal-0070BA?logo=paypal&logoColor=white&style=for-the-badge)](https://www.paypal.com/donate/?hosted_button_id=QMQPNRENXDN26)
 <!-- badges:end -->
 
 A Home Assistant app that turns the PlayStation 4 / PlayStation VR camera into a far-field
