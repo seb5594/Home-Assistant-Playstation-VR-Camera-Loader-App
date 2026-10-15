@@ -2,3 +2,8 @@
 __pycache__/
 *.py[cod]
 **/data/options.json
+*.o
+build/
+build-*/
+sony_playstation_vr_camera_loader/src/c/psvr-capture/psvr-capture
+*.zip
