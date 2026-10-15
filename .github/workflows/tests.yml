@@ -1,0 +1,82 @@
+# Unit tests and room simulations for every push and pull request.
+# The image itself is built, tested (.github/tests/runtime.sh) and released by
+# the shared pipeline in ci.yml; nothing here runs on a Home Assistant host.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  APP: sony_playstation_vr_camera_loader
+  TESTS: .github/tests
+
+jobs:
+  engine:
+    name: Capture engine (C)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends autoconf automake libtool libturbojpeg0-dev python3-numpy
+
+      - name: Build RNNoise from the submodule
+        run: sh "$APP/src/c/build-rnnoise.sh" "$PWD/$APP/src/c/rnnoise" "$RUNNER_TEMP/rnnoise"
+
+      - name: Build psvr-capture
+        run: |
+          echo "ENGINE_CFLAGS=-O2 -I$RUNNER_TEMP/rnnoise/include" >> "$GITHUB_ENV"
+          echo "ENGINE_LDFLAGS=-L$RUNNER_TEMP/rnnoise/lib" >> "$GITHUB_ENV"
+          make -C "$APP/src/c/psvr-capture" -j"$(nproc)" CFLAGS="-O2 -Werror -I$RUNNER_TEMP/rnnoise/include" \
+            LDFLAGS="-L$RUNNER_TEMP/rnnoise/lib"
+          "$APP/src/c/psvr-capture/psvr-capture" --help
+
+      - name: Unit tests and room simulations
+        run: make -C "$TESTS/c/psvr-capture" -j"$(nproc)" test CFLAGS="$ENGINE_CFLAGS" LDFLAGS="$ENGINE_LDFLAGS"
+
+      - name: Same tests with AddressSanitizer and UndefinedBehaviorSanitizer
+        run: |
+          make -C "$TESTS/c/psvr-capture" -j"$(nproc)" test BUILD=build-sanitizers \
+            CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -I$RUNNER_TEMP/rnnoise/include" \
+            LDFLAGS="-fsanitize=address,undefined $ENGINE_LDFLAGS"
+
+      - name: Synthetic camera frames through the binary
+        run: python3 "$TESTS/c/psvr-capture/end_to_end.py" "$APP/src/c/psvr-capture/psvr-capture"
+
+      - name: CPU benchmark (for the system requirements)
+        run: make -C "$TESTS/c/psvr-capture" bench CFLAGS="$ENGINE_CFLAGS" LDFLAGS="$ENGINE_LDFLAGS"
+
+  services:
+    name: App services (Python)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"   # what Alpine 3.24, the app's base, ships
+
+      - name: Install jq (used by the configuration migration)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends jq
+
+      - name: Unit tests
+        run: python -m unittest discover -s "$TESTS/python/psvr-services" -v
+
+  scripts:
+    name: Shell scripts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: ShellCheck
+        run: |
+          shellcheck -S error -s bash "$APP/run.sh"
+          shellcheck -S warning "$APP/src/c/build-rnnoise.sh" .github/scripts/*.sh .github/tests/runtime.sh
