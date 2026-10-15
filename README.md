@@ -1,39 +1,173 @@
-# Example App
+# Sony PlayStation VR Camera Loader
 
 <!-- badges:begin (generated from project metadata) -->
-[![version](https://img.shields.io/static/v1?label=version&message=0.1.0&color=1877A5&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/releases) [![released](https://img.shields.io/github/release-date-pre/seb5594/Home-Assistant-App-Template?label=released&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/releases) [![build](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-App-Template/ci.yml?branch=main&label=build&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/actions/workflows/ci.yml)<br>
-[![stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-App-Template?label=stars&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/stargazers) [![issues](https://img.shields.io/github/issues/seb5594/Home-Assistant-App-Template?label=issues&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/issues) [![updated](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-App-Template?label=updated&style=flat)](https://github.com/seb5594/Home-Assistant-App-Template/commits/main) ![image pulls](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Fimage-pulls.json&style=flat)<br>
+[![version](https://img.shields.io/static/v1?label=version&message=1.0.0--beta.4&color=1877A5&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases) [![released](https://img.shields.io/github/release-date-pre/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=released&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases) [![build](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/ci.yml?branch=main&label=build&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/ci.yml) [![tests](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/tests.yml?branch=main&label=tests&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/tests.yml)<br>
+[![stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=stars&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/stargazers) [![issues](https://img.shields.io/github/issues/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=issues&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/issues) [![updated](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=updated&style=flat)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/commits/main)<br>
 ![arch](https://img.shields.io/static/v1?label=arch&message=amd64%20%C2%B7%20aarch64&color=157F71&style=flat)<br>
-![mounts (read-only)](https://img.shields.io/static/v1?label=mounts%20%28read-only%29&message=config&color=157F71&style=flat)<br>
-![stage](https://img.shields.io/static/v1?label=stage&message=stable&color=2F855A&style=flat) ![options](https://img.shields.io/static/v1?label=options&message=1&color=1877A5&style=flat)<br>
-![image size](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Fimage-size.json&style=flat) ![runtime tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Fruntime-tests.json&style=flat) ![last build](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-App-Template%2Fbadges%2Flast-build.json&style=flat)<br>
+![mounts](https://img.shields.io/static/v1?label=mounts&message=app%20config&color=157F71&style=flat)<br>
+![stage](https://img.shields.io/static/v1?label=stage&message=experimental&color=C05621&style=flat)<br>
 [![Home Assistant](https://img.shields.io/static/v1?label=Home%20Assistant&message=Add%20app%20repository&color=18BCF2&style=flat&logo=homeassistant&logoColor=white)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps)
 <!-- badges:end -->
 
-A starting point for a Home Assistant app with the shared pipeline already wired in: validation,
-multi-architecture build, runtime tests, GHCR release and README badges.
+A Home Assistant app that turns the PlayStation 4 / PlayStation VR camera into a far-field
+microphone for Assist: four capsules, speech focus against TV and music, one clean 16 kHz
+input for any voice satellite. The camera picture comes along as a bonus.
 
-## Using this template
+## Why
 
-1. Create a repository from this template. Name it `Home-Assistant-<project>-App` so the
-   [app catalog](https://github.com/seb5594/Home-Assistant-Apps) picks it up.
-2. Rename `example-app/` and set `slug`, `name`, `url`, `description` and the options in `config.yaml`.
-   The folder name must equal the slug.
-3. Replace the repository URL in the `Dockerfile` label and change the greeting logic in `run.sh`.
-4. Adjust `.github/tests/runtime.sh`; it runs inside the built image.
-5. Regenerate the badge block above and commit the result:
+Voice control in Home Assistant lives and dies with the microphone. A satellite with one cheap
+capsule on a shelf hears the TV better than the person on the sofa, and proper microphone
+arrays cost more than the rest of the satellite. The PS4 camera has four capsules in a row,
+15 cm wide, and sells second-hand for very little – it just never had a driver that exposes
+them on Linux.
 
-   ```bash
-   git clone https://github.com/seb5594/hass-workflows .engine   # private; needs access
-   python .engine/.scripts/readme.py
-   ```
+This project gives it one. The app uploads the camera firmware, starts the microphone ADC,
+pulls the four channels out of the raw video stream and turns them into one clean 16 kHz
+voice signal that any Assist satellite can use. The camera does not stop being a camera, so
+the app also offers its picture – a nice extra on top of a good microphone, not the main act.
 
-6. Raise `version` in `config.yaml` and the `BUILD_VERSION` default in the `Dockerfile` together
-   with a new `CHANGELOG.md` entry for every release.
+**The app is experimental.** The microphone format is undocumented and was reverse-engineered
+on the hardware at hand. It runs well here; your camera, USB controller and room may teach it
+something new.
 
-The only workflow, `.github/workflows/ci.yml`, calls the shared engine at a pinned commit and
-needs the `ORCHESTRATION_PAT` secret. Pin base images and every `apk` package to an exact
-version; the pipeline rejects anything floating.
+## Features
+
+* **Speech focus** against TV, radio and music: the four capsules learn where the steady
+  background comes from, the wake word shows where the talker is, and the beam keeps the
+  talker while it suppresses the background.
+* Optional [RNNoise](https://github.com/xiph/rnnoise) noise suppression, echo cancellation for
+  sound Home Assistant plays itself, speech-gated automatic gain and a limiter.
+* One small C program does all the per-sample work, sized for low-budget hardware.
+* Live preview, MQTT camera entity and go2rtc streams (MJPEG, on-demand H.264); picture
+  controls on the app page are written back to the app configuration.
+* PS4 / PS VR camera (CUH-ZEY1, CUH-ZEY2) with microphones; PS5 HD camera (CFI-ZEY1) as a video
+  camera.
+
+## Installation
+
+1. Add the app catalog to Home Assistant with the *Add app repository* button above, or under
+   **Settings → Apps → App store → ⋮ → Repositories** with
+   `https://github.com/seb5594/Home-Assistant-Apps`.
+2. Install **Sony PlayStation VR Camera Loader** and follow its *Documentation* tab.
+
+You also need the camera firmware file, which is not part of this repository (see the app's
+documentation).
+
+## System requirements
+
+The short version; measured numbers per setting are in
+[`DOCS.md`](sony_playstation_vr_camera_loader/DOCS.md#system-requirements). x86 values were
+measured on two cloud CPUs and are given as a range; Raspberry Pi values marked *est.* are
+deliberately pessimistic estimates (four times the x86 range), not measurements. Percentages
+are of one CPU core. Keep a generous margin: Assist, the wake word engine and the satellite
+need CPU on the same machine.
+
+* **USB 3 is mandatory in every setting.** The microphones only exist inside the raw video
+  stream, and with the microphone on even the smallest profile sends about 86 MB/s. Home Assistant Green and Yellow
+  (USB 2.0 ports only), Raspberry Pi 3 and older, USB 2.0 hubs and extensions cannot run it.
+* **64-bit:** `amd64` or `aarch64`.
+
+| Setting | CPU, x86 (measured) | CPU, Raspberry Pi 4 (est.) | RAM (plan for) |
+| --- | --- | --- | --- |
+| `Microphone`, `beamforming: sum` | 2–4 % | 8–15 % | ≈ 150 MB |
+| `Microphone`, `focus` (default) | 2.5–6 % | 10–24 % | ≈ 150 MB |
+| `Microphone`, `focus` + RNNoise + echo cancellation | 5–10 % | 20–40 % | ≈ 150 MB |
+| `Both`: add for the preview `sd` at 10 fps, while watched | + 2.6–4 % | + 10–16 % | ≈ 250 MB in total |
+| add per H.264 viewer (WebRTC/RTSP), 640×400 at 10 fps | + 3–8 % | + 12–30 % | + ≈ 100 MB |
+
+| Hardware | Recommended use |
+| --- | --- |
+| Raspberry Pi 4 (4 GB recommended) | `Microphone` with `focus`, RNNoise if the room needs it; an occasional `sd` preview at ≤ 10 fps. With a USB boot SSD on the same USB 3 link, prefer `usb_profile: Medium`. |
+| Raspberry Pi 5 | as Pi 4, plus `Both` with `sd`/`native` preview at ≤ 15 fps and H.264 at 640×400 |
+| x86 mini PC (Intel N100 class and up) | any combination |
+| HA Green, HA Yellow, Raspberry Pi 3 | not supported (no USB 3) |
+
+## Repository layout
+
+```
+sony_playstation_vr_camera_loader/      the app (folder = slug, also the image build context)
+  config.yaml, Dockerfile, run.sh         app definition, image, service start
+  src/c/psvr-capture/                     capture engine (C): V4L2, microphone decoding,
+                                          speech focus, voice chain, picture processing
+  src/c/rnnoise/                          RNNoise, git submodule of xiph/rnnoise, pinned to v0.2
+  src/c/build-rnnoise.sh                  builds RNNoise statically and adds its trained model
+  src/python/psvr-services/               firmware upload, PulseAudio input, web page, MQTT
+  translations/, assets/, blueprints/, examples/
+  licenses/                               licence texts of third-party code in the app
+.github/
+  tests/c/psvr-capture/                   unit tests, room simulations, benchmark (C)
+  tests/python/psvr-services/             service and web API tests (Python)
+  tests/runtime.sh                        checks run inside the built image by the release pipeline
+  scripts/add-rnnoise-submodule.sh        registers the RNNoise submodule at the pinned commit
+  workflows/ci.yml                        shared pipeline: validation, multi-arch build, runtime
+                                          test, GHCR release, README badges
+  workflows/tests.yml                     unit tests, room simulations, ShellCheck
+```
+
+Tests stay out of the app folder on purpose: installing the app on a Home Assistant host
+compiles only what it ships, which keeps installs short on small boards.
+
+## Development
+
+```sh
+git clone --recursive https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App
+cd Home-Assistant-Playstation-VR-Camera-Loader-App
+APP=sony_playstation_vr_camera_loader
+
+# RNNoise (needs autoconf, automake, libtool; downloads the model once, checks its SHA-256)
+sh $APP/src/c/build-rnnoise.sh "$PWD/$APP/src/c/rnnoise" /tmp/rnnoise
+export CFLAGS="-O2 -I/tmp/rnnoise/include" LDFLAGS="-L/tmp/rnnoise/lib"
+
+make -C $APP/src/c/psvr-capture                 # the engine (needs libturbojpeg)
+make -C .github/tests/c/psvr-capture test       # unit tests and room simulations
+make -C .github/tests/c/psvr-capture bench      # CPU numbers for the system requirements
+python3 .github/tests/c/psvr-capture/end_to_end.py $APP/src/c/psvr-capture/psvr-capture   # needs numpy
+python3 -m unittest discover -s .github/tests/python/psvr-services
+```
+
+The room simulations (`test_beamformer.c`) print how much each beamformer improves the
+talker-to-TV ratio in a set of rooms: TV to the side, TV ahead, a stereo TV, dialogue from the
+TV, a sudden loud scene, reverberation, a fan as a second source. New scenarios are welcome,
+especially ones taken from real rooms.
+
+If the repository was set up without the submodule, `.github/scripts/add-rnnoise-submodule.sh`
+adds it at the pinned commit.
+
+Releases: raise `version` in `config.yaml` and `BUILD_VERSION` in the `Dockerfile` together and
+add a `CHANGELOG.md` entry. Base image and every Alpine package are pinned to exact versions;
+Renovate keeps them current.
+
+## Credits
+
+This project stands on the work of others:
+
+* **[PSCam4Windows](https://github.com/BumbleTree/PSCam4Windows)** by BumbleTree – AK5703
+  microphone ADC register values and the audio column layout.
+* **[PS4EYECam](https://github.com/bigboss-ps3dev/PS4EYECam)** by bigboss – the first open
+  research into the PS4 camera's frame format and firmware loading.
+* **[psxdev](https://github.com/psxdev/luke_firmwares)** and
+  **[prosperodev](https://github.com/prosperodev/hdcamera)** – camera firmware research; the
+  firmware upload follows their work.
+* **[RNNoise](https://github.com/xiph/rnnoise)** by Jean-Marc Valin, Xiph.Org and contributors –
+  noise suppression.
+* **[go2rtc](https://github.com/AlexxIT/go2rtc)** by Alexey Khit – camera streaming.
+* **[libjpeg-turbo](https://libjpeg-turbo.org/)** – JPEG encoding of the preview.
+
+The camera firmware belongs to Sony Interactive Entertainment and is not distributed here.
+"PlayStation" is a trademark of Sony Interactive Entertainment; this project is not affiliated
+with or endorsed by Sony.
+
+## Licence
+
+The project's own code is released under the [MIT licence](LICENSE). Two exceptions:
+
+* `sony_playstation_vr_camera_loader/src/python/psvr-services/ak5703.py` contains register
+  values adapted from PSCam4Windows and is licensed under the GPL-2.0
+  ([text](sony_playstation_vr_camera_loader/licenses/GPL-2.0.txt)).
+* RNNoise, included as a submodule, keeps its BSD-3-Clause licence.
+
+Details for every third-party component are in
+[`THIRD_PARTY_NOTICES.md`](sony_playstation_vr_camera_loader/THIRD_PARTY_NOTICES.md).
 
 <!-- support:begin (generated, shared text) -->
 ## Say thanks
