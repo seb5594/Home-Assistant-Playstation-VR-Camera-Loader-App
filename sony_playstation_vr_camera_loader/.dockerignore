@@ -1,0 +1,12 @@
+**/__pycache__/
+**/*.pyc
+**/*.o
+**/build/
+src/c/psvr-capture/psvr-capture
+src/c/rnnoise/.git
+examples/
+blueprints/
+README.md
+DOCS.md
+CHANGELOG.md
+*.zip
