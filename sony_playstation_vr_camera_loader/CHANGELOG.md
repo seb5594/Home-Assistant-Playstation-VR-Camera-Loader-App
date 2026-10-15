@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0-beta4
+## 0.4.0-beta.4
 
 Versions follow SemVer from now on; this is the release previously called beta4.
 
@@ -22,7 +22,7 @@ Versions follow SemVer from now on; this is the release previously called beta4.
   the app configuration.
 * Uses `bashio::app.options` where the base image has it (no deprecation warning in the log).
 
-## 1.0.0-beta3
+## beta3
 
 Microphone:
 
@@ -55,7 +55,7 @@ Project:
 * Documentation split into a short README and the full DOCS, with system requirements per
   setting. The app remains experimental.
 
-## 1.0.0-beta2
+## beta2
 
 * Fixed: picture settings on the app page were not saved. Home Assistant's ingress proxy
   sends request bodies chunked, without Content-Length, and the web server only read the
@@ -74,7 +74,7 @@ Project:
   gamma. The colour cast of the camera is corrected more completely.
 * Technical details list the camera's own V4L2 controls (exposure, gain, …).
 
-## 1.0.0-beta1
+## beta1
 
 Microphone:
 
