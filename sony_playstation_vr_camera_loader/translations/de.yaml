@@ -1,0 +1,86 @@
+configuration:
+  mode:
+    name: Modus
+    description: Microphone (Standard) nutzt kein Video. Camera überträgt nur Bilder, solange jemand zuschaut. Both betreibt Mikrofon und Bild gleichzeitig.
+  camera_model:
+    name: Kameramodell
+    description: Auto erkennt, ob eine PS4/PS-VR- oder eine PS5-HD-Kamera angeschlossen ist, und merkt es sich. Nur ein Modell wählen, wenn die Erkennung die falsche Firmware lädt. Die Firmware selbst gehört nicht zur App – auf der App-Seite hinzufügen.
+  log_level:
+    name: Protokollstufe
+    description: Umfang der Meldungen im App-Protokoll.
+  microphone:
+    name: Mikrofon
+    fields:
+      usb_profile:
+        name: USB-Profil
+        description: High (1280x800 pro Auge) ist erprobt. Medium und Low brauchen viel weniger USB-Bandbreite und CPU, sind aber experimentell – die App-Seite zeigt die gemessene Abtastrate.
+      gain:
+        name: Mikrofonverstärkung in Prozent
+        description: Gilt für alle vier Kapseln. Verringern, wenn die App-Seite Übersteuerung meldet.
+      beamforming:
+        name: Richtwirkung
+        description: Focus (Standard, experimentell) lernt, woher dauerhafter Schall wie Fernseher oder Radio kommt, und sobald jemand darüber hinweg spricht – meist das Wakeword –, wo der Sprecher steht, und hört weiter in diese Richtung. Adaptive dämpft nur den dauerhaften Schall. Sum mittelt nur die vier Kapseln.
+      noise_suppression:
+        name: Geräuschminderung für Sprache
+        description: RNNoise filtert Hintergrundgeräusche. Kann Wakewords leicht verändern – mit der Hörprobe vergleichen.
+      noise_strength:
+        name: RNNoise-Stärke in Prozent
+        description: Mischt gefiltertes und ursprüngliches Signal; 50–75 ist meist ein guter Wert.
+      auto_gain:
+        name: Automatische Lautstärke
+        description: Hebt leise, entfernte Sprache auf einen gleichmäßigen Pegel. Macht das Signal nie leiser als den Eingang; ein Begrenzer fängt laute Spitzen ab.
+      echo_reference:
+        name: Echo-Unterdrückung für Audioausgang
+        description: Name eines Home-Assistant-Audioausgangs (siehe „ha audio info“) oder „default“. Entfernt Musik und Sprachantworten, die Home Assistant selbst dort abspielt. Leer lassen zum Abschalten.
+      set_default_input:
+        name: Als Standard-Audioeingang festlegen
+        description: Setzt den gemeinsamen PulseAudio-Standard auf dieses Mikrofon und stellt ihn beim Beenden wieder her.
+  camera:
+    name: Kamera
+    description: Vorschau, MQTT-Kamera und go2rtc; im Modus Microphone ohne Wirkung. Farbe, Helligkeit und Rauschfilter werden live auf der App-Seite eingestellt.
+    fields:
+      publish_camera_entity:
+        name: MQTT-Kamera bereitstellen
+        description: Legt per MQTT-Discovery eine Kamera-Entität in Home Assistant an.
+      video_resolution:
+        name: Bildauflösung
+        description: SD (halbe Auflösung eines Auges) ist Standard und schont die CPU; native ist die volle Auflösung eines Auges, HD schneidet auf 16:9 zu, low ist ein Viertel.
+      video_fps:
+        name: Maximale Bildrate
+        description: Vorschaubilder pro Sekunde, 1 bis 30. Bilder entstehen nur, solange jemand zuschaut.
+      picture_brightness:
+        name: Bild-Helligkeit
+        description: -100 bis 100, 0 ist neutral. Wie alle Bild-Einstellungen auch live auf der App-Seite einstellbar; Änderungen dort werden hierher zurückgeschrieben.
+      picture_contrast:
+        name: Bild-Kontrast in Prozent
+        description: 50 bis 200, 100 ist neutral.
+      picture_gamma:
+        name: Bild-Schatten (Gamma) in Prozent
+        description: 50 bis 250; über 100 hellt dunkle Bereiche auf.
+      picture_saturation:
+        name: Bild-Farbe in Prozent
+        description: 0 (schwarzweiß) bis 400. Die Kamera liefert blasse Farben, vor allem bei wenig Licht; 160 ist der Standard.
+      picture_auto_levels:
+        name: Automatische Belichtungsstufen
+        description: Streckt den Helligkeitsumfang der Szene und hellt dunkle Räume auf.
+      picture_white_balance:
+        name: Automatischer Weißabgleich
+        description: Entfernt den Farbstich der Kamera, beurteilt an fast grauen Flächen.
+      picture_noise_filter:
+        name: Bild-Rauschfilter
+        description: Beruhigt das Sensorrauschen zwischen den Bildern, ohne Bewegungen zu verwischen; strong eignet sich für dunkle Räume.
+      mqtt:
+        name: MQTT
+        description: Broker-Einstellungen für „MQTT-Kamera bereitstellen“.
+        fields:
+          auto_detect:
+            name: Broker automatisch erkennen
+            description: Verwendet den von Home Assistant registrierten MQTT-Dienst, auch wenn er in einer anderen App läuft.
+          host:
+            name: Broker-Hostname oder IP
+          port:
+            name: Broker-Port
+          username:
+            name: Benutzername
+          password:
+            name: Passwort

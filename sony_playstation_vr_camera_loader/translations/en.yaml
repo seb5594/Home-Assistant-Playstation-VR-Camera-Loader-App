@@ -1,0 +1,86 @@
+configuration:
+  mode:
+    name: Mode
+    description: Microphone (default) runs no video. Camera only streams pictures while someone watches. Both runs the microphone and the picture together.
+  camera_model:
+    name: Camera model
+    description: Auto finds out whether a PS4/PS VR or a PS5 HD camera is connected and remembers it. Choose a model only if detection picks the wrong firmware. The firmware itself is not part of the app – add it on the app page.
+  log_level:
+    name: Log level
+    description: Amount of detail shown in the app log.
+  microphone:
+    name: Microphone
+    fields:
+      usb_profile:
+        name: USB profile
+        description: High (1280x800 per eye) is proven. Medium and Low use far less USB bandwidth and CPU but are experimental – the app page shows the measured sample rate.
+      gain:
+        name: Microphone gain percent
+        description: Applies to all four capsules. Lower it if the app page reports clipping.
+      beamforming:
+        name: Beamforming
+        description: Focus (default, experimental) learns where steady sound such as a TV or radio comes from and, as soon as someone speaks over it – usually the wake word – where the talker is, and keeps listening in that direction. Adaptive only suppresses the steady sound. Sum just averages the four capsules.
+      noise_suppression:
+        name: Speech noise reduction
+        description: RNNoise filters background noise. It can slightly change wake words – compare with the listening test.
+      noise_strength:
+        name: RNNoise strength percent
+        description: Mix of filtered and original audio; 50–75 usually works well.
+      auto_gain:
+        name: Automatic gain
+        description: Raises quiet, distant speech to a steady level. It never makes the signal quieter than the input; a limiter catches loud peaks.
+      echo_reference:
+        name: Echo cancellation for audio output
+        description: Name of a Home Assistant audio output (see "ha audio info") or "default". Removes music and voice replies that Home Assistant itself plays there. Leave empty to disable.
+      set_default_input:
+        name: Set as default audio input
+        description: Selects this microphone as the shared PulseAudio default and restores the previous input on shutdown.
+  camera:
+    name: Camera
+    description: Preview, MQTT camera and go2rtc; ignored in mode Microphone. Colour, brightness and noise filter are set live on the app page.
+    fields:
+      publish_camera_entity:
+        name: Publish MQTT camera
+        description: Creates a camera entity in Home Assistant through MQTT discovery.
+      video_resolution:
+        name: Picture resolution
+        description: SD (half resolution of one eye) is the default and light on CPU; native is the full resolution of one eye, HD crops it to 16:9, low is a quarter.
+      video_fps:
+        name: Maximum picture frame rate
+        description: Preview pictures per second, 1 to 30. Pictures are only made while someone watches.
+      picture_brightness:
+        name: Picture brightness
+        description: -100 to 100, 0 is neutral. Like all picture settings it can also be set live on the app page, which writes it back here.
+      picture_contrast:
+        name: Picture contrast percent
+        description: 50 to 200, 100 is neutral.
+      picture_gamma:
+        name: Picture shadows (gamma) percent
+        description: 50 to 250; above 100 lifts dark areas.
+      picture_saturation:
+        name: Picture colour percent
+        description: 0 (black and white) to 400. The camera delivers pale colours, especially in dim light; 160 is the default.
+      picture_auto_levels:
+        name: Automatic exposure levels
+        description: Stretches the brightness range of the scene and lifts dark rooms.
+      picture_white_balance:
+        name: Automatic white balance
+        description: Removes the camera's colour cast, judged from surfaces that are almost grey.
+      picture_noise_filter:
+        name: Picture noise filter
+        description: Calms sensor noise between frames without smearing movement; strong suits dark rooms.
+      mqtt:
+        name: MQTT
+        description: Broker settings for Publish MQTT camera.
+        fields:
+          auto_detect:
+            name: Detect broker automatically
+            description: Use the Home Assistant registered MQTT service, even when its broker runs in another app.
+          host:
+            name: Broker host or IP
+          port:
+            name: Broker port
+          username:
+            name: Username
+          password:
+            name: Password

@@ -1,0 +1,9 @@
+# Watch the camera from another go2rtc or Frigate instance.
+#
+# 1. Set the app's mode to "Camera" or "Both".
+# 2. Map port 8554 (RTSP) in the app's Network settings.
+#
+# Do not point go2rtc at /dev/videoN yourself: the app owns the camera, and a
+# second reader would interrupt the microphone.
+streams:
+  playstation_camera: rtsp://HOME_ASSISTANT_IP:8554/playstation_camera

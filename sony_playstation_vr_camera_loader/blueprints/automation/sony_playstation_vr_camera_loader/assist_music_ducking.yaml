@@ -1,0 +1,94 @@
+blueprint:
+  name: Assist Satellite and Music Assistant on one audio output
+  description: >-
+    Pause Music Assistant while a satellite listens and responds, then resume it.
+    Optionally reduce the player volume instead. Keep the satellite's playback
+    device on the same physical output as Music Assistant.
+  domain: automation
+  input:
+    satellite:
+      name: Assist satellite
+      selector:
+        entity:
+          domain: assist_satellite
+    music_player:
+      name: Music Assistant player
+      selector:
+        entity:
+          domain: media_player
+    reduction:
+      name: During voice interaction
+      default: pause
+      selector:
+        select:
+          options:
+            - label: Pause music (recommended, preserves speech volume)
+              value: pause
+            - label: Lower music player volume
+              value: lower
+    duck_percent:
+      name: Music volume percentage while listening
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 5
+          unit_of_measurement: "%"
+          mode: slider
+
+variables:
+  satellite_entity: !input satellite
+  player_entity: !input music_player
+  reduction: !input reduction
+  duck_percent: !input duck_percent
+
+triggers:
+  - trigger: assist_satellite.started_listening
+    target:
+      entity_id: !input satellite
+
+conditions:
+  - condition: state
+    entity_id: !input music_player
+    state: playing
+
+actions:
+  - variables:
+      original_volume: "{{ state_attr(player_entity, 'volume_level') }}"
+      pause_music: "{{ reduction == 'pause' or state_attr(player_entity, 'volume_level') is none }}"
+      reduced_volume: "{{ (state_attr(player_entity, 'volume_level') | float(0) * duck_percent | float(20) / 100) | round(3) }}"
+  - choose:
+      - conditions: "{{ pause_music }}"
+        sequence:
+          - action: media_player.media_pause
+            target:
+              entity_id: !input music_player
+    default:
+      - action: media_player.volume_set
+        target:
+          entity_id: !input music_player
+        data:
+          volume_level: "{{ reduced_volume }}"
+  # One run keeps the original state through listening, processing and speech.
+  - wait_template: "{{ is_state(satellite_entity, 'idle') }}"
+    timeout: "00:02:00"
+    continue_on_timeout: true
+  - choose:
+      - conditions: "{{ pause_music and is_state(player_entity, 'paused') }}"
+        sequence:
+          - action: media_player.media_play
+            target:
+              entity_id: !input music_player
+      - conditions: >-
+          {{ not pause_music and states(player_entity) in ['playing', 'paused']
+             and ((state_attr(player_entity, 'volume_level') | float(-1))
+             - (reduced_volume | float(-2))) | abs < 0.011 }}
+        sequence:
+          - action: media_player.volume_set
+            target:
+              entity_id: !input music_player
+            data:
+              volume_level: "{{ original_volume | float(1) }}"
+
+mode: single
