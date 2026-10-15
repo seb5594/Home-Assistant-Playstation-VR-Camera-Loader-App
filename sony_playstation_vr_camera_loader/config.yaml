@@ -1,0 +1,97 @@
+name: Sony PlayStation VR Camera Loader
+description: Turns the PlayStation (VR) Camera into a far-field voice microphone for Assist, with an optional video preview.
+version: "1.0.0-beta.4"
+slug: sony_playstation_vr_camera_loader
+stage: experimental
+init: false
+arch:
+  - amd64
+  - aarch64
+url: https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App
+udev: true
+usb: true
+video: true
+audio: true
+hassio_api: true
+hassio_role: manager
+devices:
+  - /dev/snd
+ingress: true
+ingress_port: 8099
+ingress_stream: true
+panel_icon: mdi:webcam
+ports:
+  1984/tcp: null
+  8554/tcp: null
+  8555/tcp: null
+  8555/udp: null
+ports_description:
+  1984/tcp: Optional go2rtc API for external WebRTC clients
+  8554/tcp: Optional go2rtc RTSP stream
+  8555/tcp: Optional go2rtc WebRTC TCP
+  8555/udp: Optional go2rtc WebRTC UDP
+map:
+  - type: addon_config
+    read_only: false
+services:
+  - mqtt:want
+options:
+  mode: Microphone
+  camera_model: auto
+  log_level: info
+  microphone:
+    usb_profile: High
+    gain: 80
+    beamforming: focus
+    noise_suppression: "off"
+    noise_strength: 75
+    auto_gain: true
+    echo_reference: ""
+    set_default_input: false
+  camera:
+    publish_camera_entity: false
+    video_resolution: sd
+    video_fps: 10
+    picture_brightness: 0
+    picture_contrast: 100
+    picture_gamma: 100
+    picture_saturation: 160
+    picture_auto_levels: true
+    picture_white_balance: true
+    picture_noise_filter: light
+    mqtt:
+      auto_detect: true
+      host: ""
+      port: 1883
+      username: ""
+      password: ""
+schema:
+  mode: list(Microphone|Camera|Both)
+  camera_model: list(auto|ps4|ps5)
+  log_level: list(debug|info|warning|error)
+  microphone:
+    usb_profile: list(High|Medium|Low)?
+    gain: int(0,100)
+    beamforming: list(focus|adaptive|sum)?
+    noise_suppression: list(off|rnnoise)
+    noise_strength: int(0,100)
+    auto_gain: bool?
+    echo_reference: str?
+    set_default_input: bool
+  camera:
+    publish_camera_entity: bool
+    video_resolution: list(native|hd|sd|low)
+    video_fps: int(1,30)
+    picture_brightness: int(-100,100)?
+    picture_contrast: int(50,200)?
+    picture_gamma: int(50,250)?
+    picture_saturation: int(0,400)?
+    picture_auto_levels: bool?
+    picture_white_balance: bool?
+    picture_noise_filter: list(off|light|strong)?
+    mqtt:
+      auto_detect: bool
+      host: str?
+      port: port
+      username: str?
+      password: password?

@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlayStation VR Camera</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --text: #1d2330; --muted: #657085; --line: #e2e5eb;
+    --accent: #2f6fde; --ok: #1f9d55; --warn: #c27a00; --bad: #d23c3c; --idle: #9aa3b2;
+    --meter: #e8ebf0; --code: #f0f2f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418; --card: #1a1e24; --text: #e7eaf0; --muted: #98a2b3; --line: #2a3039;
+      --accent: #6b9dff; --ok: #3ccf7e; --warn: #f0b443; --bad: #ff6b6b; --idle: #5d6676;
+      --meter: #262c35; --code: #232932;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 20px 16px 40px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0; font-weight: 650; }
+  h2 { font-size: 15px; margin: 0 0 10px; font-weight: 650; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .wide { grid-column: 1 / -1; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 999px;
+          background: var(--code); font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--idle); flex: none; }
+  .ok .dot { background: var(--ok); } .warn .dot { background: var(--warn); } .bad .dot { background: var(--bad); }
+  .line { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .note { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; font-size: 13px;
+          background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  .note.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); }
+  .meter { position: relative; height: 10px; border-radius: 6px; background: var(--meter); overflow: hidden; }
+  .meter > span { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 6px;
+                  background: var(--accent); transition: width .25s ease-out; }
+  .meter.out > span { background: var(--ok); }
+  .meter-row { display: grid; grid-template-columns: 76px 1fr 64px; align-items: center; gap: 10px; margin: 8px 0; }
+  .meter-row .value { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted); }
+  .speech { opacity: .35; transition: opacity .2s; }
+  .speech.on { opacity: 1; }
+  .speech.on .dot { background: var(--ok); }
+  .listen { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-start; }
+  .listen > div:first-child { flex: 1 1 320px; }
+  .listen .players { flex: 1 1 320px; margin-top: 0; }
+  .copy { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  code { background: var(--code); padding: 6px 8px; border-radius: 6px; font-size: 13px; overflow-wrap: anywhere; flex: 1; }
+  button, a.button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--code);
+           color: var(--text); padding: 7px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button:disabled { opacity: .55; cursor: default; }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0; }
+  dt { color: var(--muted); font-size: 13px; }
+  dd { margin: 0; font-size: 14px; }
+  .stacked { grid-template-columns: 1fr; gap: 2px; }
+  .settings-link { display: inline-block; margin-top: 12px; font-size: 13px; color: var(--accent);
+                   text-decoration: none; font-weight: 600; }
+  .settings-link:hover { text-decoration: underline; }
+  .stacked dd { margin-bottom: 8px; }
+  .players { display: grid; gap: 10px; margin-top: 12px; }
+  .players label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 3px; }
+  audio { width: 100%; height: 36px; }
+  .preview-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 680px) { .preview-layout { grid-template-columns: 1fr; } }
+  .preview-frame { position: relative; }
+  .preview { width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: #000; border-radius: 8px; display: block; }
+  .fps { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 6px; font-size: 12px;
+         font-weight: 600; font-variant-numeric: tabular-nums; color: #fff; background: rgba(0, 0, 0, .55); }
+  .control { margin: 0 0 12px; }
+  .control label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+  .control output { font-variant-numeric: tabular-nums; color: var(--text); }
+  input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; }
+  .switch { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 0 0 10px; cursor: pointer; }
+  .switch input { width: 16px; height: 16px; accent-color: var(--accent); }
+  select, input[type=file] { font: inherit; font-size: 14px; color: var(--text); background: var(--code);
+           border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
+  .field { display: grid; gap: 4px; margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+  .note.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  details .card { margin-top: 10px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 data-t="title">PlayStation VR Camera</h1>
+    <span class="pill" id="overall"><span class="dot"></span><span id="overall-text">…</span></span>
+  </header>
+
+  <div class="grid">
+    <section class="card wide" id="firmware-card" hidden>
+      <h2 data-t="firmware">Camera firmware</h2>
+      <p class="muted" style="margin:0 0 12px" data-t="firmware_hint">The camera needs its firmware every time it is plugged in. The app does not include it: choose the firmware file (.bin) of your camera here, or copy it as firmware_ps4.bin / firmware_ps5.bin into the app's configuration folder.</p>
+      <div class="actions" style="align-items:end">
+        <label class="field" style="margin:0"><span data-t="firmware_file">Firmware file</span>
+          <input type="file" id="firmware-file" accept=".bin,application/octet-stream"></label>
+        <label class="field" style="margin:0"><span data-t="firmware_for">For camera</span>
+          <select id="firmware-model">
+            <option value="" data-t="firmware_detect">Detect automatically</option>
+            <option value="ps4">PS4 / PS VR</option>
+            <option value="ps5">PS5 HD</option>
+          </select></label>
+        <button type="button" class="primary" id="firmware-upload" data-t="firmware_upload">Save firmware</button>
+      </div>
+      <div class="note" id="firmware-result" hidden></div>
+      <div class="muted" id="firmware-files" style="margin-top:10px"></div>
+    </section>
+
+    <section class="card">
+      <h2 data-t="camera">Camera</h2>
+      <div class="line" id="camera-state"><span class="dot"></span><span></span></div>
+      <div class="muted" id="camera-detail"></div>
+      <div class="note" id="camera-warning" hidden></div>
+    </section>
+
+    <section class="card" id="microphone-card">
+      <h2 data-t="microphone">Microphone</h2>
+      <div class="line" id="mic-state"><span class="dot"></span><span></span></div>
+      <div class="meter-row"><span class="muted" data-t="input">Input</span>
+        <div class="meter"><span id="meter-in"></span></div><span class="value" id="level-in">–</span></div>
+      <div class="meter-row"><span class="muted" data-t="output">Output</span>
+        <div class="meter out"><span id="meter-out"></span></div><span class="value" id="level-out">–</span></div>
+      <span class="pill speech" id="speech"><span class="dot"></span><span data-t="speech">Speech detected</span></span>
+      <div class="note" id="mic-warning" hidden></div>
+      <div class="muted" style="margin-top:12px" data-t="source_hint">Select this input in Assist Satellite:</div>
+      <div class="copy"><code id="source">sony_playstation_vr_camera_input</code>
+        <button type="button" id="copy" data-t="copy">Copy</button></div>
+    </section>
+
+    <section class="card" id="enhance-card">
+      <h2 data-t="enhancement">Speech enhancement</h2>
+      <dl class="stacked">
+        <dt data-t="beam">Beamforming</dt><dd id="beam">–</dd>
+        <dt data-t="echo">Echo cancellation</dt><dd id="echo">–</dd>
+        <dt data-t="noise">Noise reduction</dt><dd id="noise">–</dd>
+        <dt data-t="agc">Automatic gain</dt><dd id="agc">–</dd>
+      </dl>
+      <a class="settings-link" id="settings-link" target="_top" hidden data-t="settings_link">Change in the app configuration →</a>
+      <p class="muted" style="margin:12px 0 0" id="settings-hint" data-t="settings_hint">Change these in the app's Configuration tab.</p>
+    </section>
+
+    <section class="card wide" id="compare-card">
+      <h2 data-t="listen">Listening test</h2>
+      <div class="listen">
+        <div>
+          <p class="muted" style="margin:0" data-t="listen_hint">Records 4 seconds before and after processing at the same time. Speak as you would to your voice assistant.</p>
+          <div class="actions"><button type="button" class="primary" id="record" data-t="record">Start recording</button></div>
+        </div>
+        <div class="players" id="players" hidden>
+          <div><label data-t="before">Before (raw capsules)</label><audio id="play-raw" controls preload="none"></audio></div>
+          <div><label data-t="after">After (what Assist hears)</label><audio id="play-processed" controls preload="none"></audio></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card wide" id="preview-card" hidden>
+      <h2 data-t="preview">Preview</h2>
+      <div class="preview-layout">
+        <div>
+          <div class="preview-frame">
+            <img class="preview" id="preview" alt="">
+            <span class="fps" id="fps" hidden></span>
+          </div>
+          <div class="muted" id="preview-state" style="margin-top:8px"></div>
+        </div>
+        <form id="picture" autocomplete="off">
+          <h2 data-t="picture">Picture</h2>
+          <div class="control"><label for="saturation"><span data-t="saturation">Colour</span><output data-for="saturation"></output></label>
+            <input type="range" id="saturation" name="saturation" step="5"></div>
+          <div class="control"><label for="brightness"><span data-t="brightness">Brightness</span><output data-for="brightness"></output></label>
+            <input type="range" id="brightness" name="brightness" step="2"></div>
+          <div class="control"><label for="contrast"><span data-t="contrast">Contrast</span><output data-for="contrast"></output></label>
+            <input type="range" id="contrast" name="contrast" step="5"></div>
+          <div class="control"><label for="gamma"><span data-t="gamma">Shadows (gamma)</span><output data-for="gamma"></output></label>
+            <input type="range" id="gamma" name="gamma" step="5"></div>
+          <label class="field" for="denoise"><span data-t="denoise">Noise filter</span>
+            <select id="denoise" name="denoise">
+              <option value="0" data-t="denoise_0">Off</option>
+              <option value="1" data-t="denoise_1">Light</option>
+              <option value="2" data-t="denoise_2">Strong</option>
+            </select></label>
+          <label class="switch"><input type="checkbox" name="auto_levels"><span data-t="auto_levels">Automatic exposure levels</span></label>
+          <label class="switch"><input type="checkbox" name="white_balance"><span data-t="white_balance">Automatic white balance</span></label>
+          <p class="muted" style="margin:4px 0 10px" data-t="picture_hint">Changes apply live and are kept. They affect the preview, MQTT camera and go2rtc.</p>
+          <button type="button" id="picture-reset" data-t="picture_reset">Reset to defaults</button>
+          <div class="note bad" id="picture-error" hidden></div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <details id="details">
+    <summary data-t="details">Technical details</summary>
+    <div class="card">
+      <dl id="tech"></dl>
+      <div class="actions">
+        <button type="button" id="rows" data-t="rows">Download raw microphone rows (2 s)</button>
+        <a class="button" href="microphone.wav" download="camera-pulseaudio.wav" data-t="pulse_test">Record 4 s from PulseAudio</a>
+        <button type="button" id="firmware-show" data-t="firmware_manage">Camera firmware…</button>
+      </div>
+    </div>
+  </details>
+</main>
+
+<script>
+"use strict";
+const TEXT = {
+  en: {
+    title: "PlayStation VR Camera", camera: "Camera", microphone: "Microphone", input: "Input",
+    output: "Output", speech: "Speech detected", source_hint: "Select this input in Assist Satellite:",
+    copy: "Copy", copied: "Copied", enhancement: "Speech enhancement", beam: "Beamforming",
+    echo: "Echo cancellation", noise: "Noise reduction", agc: "Automatic gain",
+    settings_hint: "Change these in the app's Configuration tab.", settings_link: "Change in the app configuration →",
+    listen: "Listening test",
+    listen_hint: "Records 4 seconds before and after processing at the same time. Speak as you would to your voice assistant.",
+    record: "Start recording", recording: "Recording… {s} s", before: "Before (raw capsules)",
+    after: "After (what Assist hears)", preview: "Preview", details: "Technical details",
+    rows: "Download raw microphone rows (2 s)", pulse_test: "Record 4 s from PulseAudio",
+    ready: "Ready", starting: "Starting", waiting: "Waiting for camera", problem: "Problem",
+    cam_ready: "Connected", cam_firmware: "Loading firmware…", cam_no_firmware: "Waiting for its firmware",
+    cam_missing: "Not found – connect the camera to a USB 3 port",
+    model_ps4: "PS4 camera", model_ps5: "PS5 HD camera",
+    cam_err_firmware_missing: "No firmware stored yet – add it under Camera firmware.",
+    cam_err_firmware_timeout: "The camera did not start after the firmware upload: {e}",
+    cam_err_firmware_upload: "Firmware upload failed: {e}", cam_err_watcher: "USB hotplug watcher unavailable: {e}",
+    firmware: "Camera firmware",
+    firmware_hint: "The camera needs its firmware every time it is plugged in. The app does not include it: choose the firmware file (.bin) of your camera here, or copy it as firmware_ps4.bin / firmware_ps5.bin into the app's configuration folder.",
+    firmware_file: "Firmware file", firmware_for: "For camera", firmware_detect: "Detect automatically",
+    firmware_upload: "Save firmware", firmware_manage: "Camera firmware…", firmware_choose: "Choose a file first.",
+    firmware_saved: "Saved as {file} ({known}). If the camera is waiting, it starts within a few seconds.",
+    fw_known: "tested version", fw_unknown: "unknown version – please report whether it works",
+    fw_err_size: "This file has the wrong size for a camera firmware.",
+    fw_err_signature: "This file is not a PlayStation camera firmware.",
+    fw_err_model: "Unknown firmware version: choose whether it is for the PS4 or the PS5 camera.",
+    fw_err_write: "The file could not be saved: {e}", fw_none: "No firmware stored yet.", fw_files: "Stored: {list}",
+    mic_streaming: "Active", mic_starting: "Starting…", mic_waiting: "Waiting for the camera",
+    mic_silent: "No sound from the capsules", mic_error: "Error", mic_disabled: "Not used in camera mode",
+    mic_no_microphone: "The PS5 HD camera has no microphones", mic_stopped: "Stopped",
+    clipping: "Input is clipping ({p} %). Lower the microphone gain in the configuration.",
+    silent_hint: "The camera delivers frames, but the microphone stays silent. Replug the camera; if it persists, download the raw rows below and report them.",
+    beam_sum: "Average of all four capsules", beam_adaptive_idle: "Adaptive – no steady noise source",
+    beam_adaptive: "Adaptive – steady noise lowered by {db} dB",
+    beam_focus_waiting: "Speech focus – waiting for a voice to focus on; steady noise lowered by {db} dB",
+    beam_focus_following: "Speech focus – following the talker ({p} % of the band), background lowered by {db} dB",
+    beam_focus_kept: "Speech focus – keeps the last talker's direction ({p} % of the band), background lowered by {db} dB",
+    echo_off: "Off", echo_waiting: "Ready – nothing playing", echo_active: "{db} dB of playback removed",
+    echo_learning: "Learning the room…", echo_no_speaker: "Off – no speaker found to listen to",
+    echo_transport: "Off – the selected output is this app's own microphone transport",
+    echo_not_found: "Off – audio output not found", echo_unavailable: "Off – PulseAudio not reachable",
+    noise_off: "Off", agc_off: "Off",
+    preview_live: "{w} · camera sends {f} fps", preview_wait: "Waiting for an image…", fps_badge: "{n} fps",
+    picture: "Picture", saturation: "Colour", brightness: "Brightness", contrast: "Contrast",
+    gamma: "Shadows (gamma)", denoise: "Noise filter", denoise_0: "Off", denoise_1: "Light", denoise_2: "Strong",
+    auto_levels: "Automatic exposure levels", white_balance: "Automatic white balance",
+    picture_hint: "Changes apply live and are written to the app configuration. They affect the preview, MQTT camera and go2rtc.",
+    picture_reset: "Reset to defaults", picture_error: "The picture settings could not be saved ({e}).",
+    picture_config_error: "Applied, but not written to the app configuration; it keeps the previous values after a restart.",
+    t_mode: "USB mode", t_layout: "Microphone layout", t_rate: "Measured sample rate", t_caps: "Capsule levels",
+    t_mics: "Active capsules", t_frames: "Frames / dropped", t_rows: "Rows skipped", t_buffer: "Audio discarded",
+    t_adc: "Capsule volume", t_port: "USB port", t_node: "Video node", t_echo: "Echo reference",
+    t_delay: "Echo delay", t_model: "Camera model", t_firmware: "Firmware", auto: "automatic",
+    t_controls: "Camera controls (V4L2)", t_floor: "Noise floor (before automatic gain)",
+  },
+  de: {
+    title: "PlayStation VR Kamera", camera: "Kamera", microphone: "Mikrofon", input: "Eingang",
+    output: "Ausgang", speech: "Sprache erkannt", source_hint: "In Assist Satellite als Mikrofon wählen:",
+    copy: "Kopieren", copied: "Kopiert", enhancement: "Sprachverbesserung", beam: "Richtwirkung",
+    echo: "Echo-Unterdrückung", noise: "Rauschunterdrückung", agc: "Automatische Lautstärke",
+    settings_hint: "Ändern im Tab „Konfiguration“ der App.", settings_link: "In der App-Konfiguration ändern →",
+    listen: "Hörprobe",
+    listen_hint: "Nimmt 4 Sekunden gleichzeitig vor und nach der Verarbeitung auf. Sprich so, wie du mit deinem Sprachassistenten sprichst.",
+    record: "Aufnahme starten", recording: "Aufnahme… {s} s", before: "Vorher (rohe Kapseln)",
+    after: "Nachher (was Assist hört)", preview: "Vorschau", details: "Technische Details",
+    rows: "Mikrofon-Rohdaten herunterladen (2 s)", pulse_test: "4 s aus PulseAudio aufnehmen",
+    ready: "Bereit", starting: "Startet", waiting: "Wartet auf Kamera", problem: "Problem",
+    cam_ready: "Verbunden", cam_firmware: "Firmware wird geladen…", cam_no_firmware: "Wartet auf ihre Firmware",
+    cam_missing: "Nicht gefunden – Kamera an einen USB-3-Port anschließen",
+    model_ps4: "PS4-Kamera", model_ps5: "PS5-HD-Kamera",
+    cam_err_firmware_missing: "Noch keine Firmware hinterlegt – unter „Kamera-Firmware“ hinzufügen.",
+    cam_err_firmware_timeout: "Die Kamera ist nach dem Firmware-Upload nicht gestartet: {e}",
+    cam_err_firmware_upload: "Firmware-Upload fehlgeschlagen: {e}", cam_err_watcher: "USB-Hotplug-Überwachung nicht verfügbar: {e}",
+    firmware: "Kamera-Firmware",
+    firmware_hint: "Die Kamera braucht ihre Firmware bei jedem Einstecken. Die App enthält sie nicht: Wähle hier die Firmware-Datei (.bin) deiner Kamera oder kopiere sie als firmware_ps4.bin / firmware_ps5.bin in den Konfigurationsordner der App.",
+    firmware_file: "Firmware-Datei", firmware_for: "Für Kamera", firmware_detect: "Automatisch erkennen",
+    firmware_upload: "Firmware speichern", firmware_manage: "Kamera-Firmware…", firmware_choose: "Bitte zuerst eine Datei wählen.",
+    firmware_saved: "Gespeichert als {file} ({known}). Wartet die Kamera, startet sie in wenigen Sekunden.",
+    fw_known: "getestete Version", fw_unknown: "unbekannte Version – bitte melden, ob sie funktioniert",
+    fw_err_size: "Die Datei hat nicht die Größe einer Kamera-Firmware.",
+    fw_err_signature: "Die Datei ist keine PlayStation-Kamera-Firmware.",
+    fw_err_model: "Unbekannte Firmware-Version: Bitte wählen, ob sie für die PS4- oder die PS5-Kamera ist.",
+    fw_err_write: "Die Datei konnte nicht gespeichert werden: {e}", fw_none: "Noch keine Firmware hinterlegt.", fw_files: "Hinterlegt: {list}",
+    mic_streaming: "Aktiv", mic_starting: "Startet…", mic_waiting: "Wartet auf die Kamera",
+    mic_silent: "Kein Ton von den Kapseln", mic_error: "Fehler", mic_disabled: "Im Kamera-Modus nicht genutzt",
+    mic_no_microphone: "Die PS5-HD-Kamera hat keine Mikrofone", mic_stopped: "Gestoppt",
+    clipping: "Eingang übersteuert ({p} %). Mikrofonverstärkung in der Konfiguration verringern.",
+    silent_hint: "Die Kamera liefert Bilder, aber das Mikrofon bleibt still. Kamera kurz abstecken; falls es bleibt, unten die Rohdaten herunterladen und melden.",
+    beam_sum: "Mittelwert aller vier Kapseln", beam_adaptive_idle: "Adaptiv – keine dauerhafte Störquelle",
+    beam_adaptive: "Adaptiv – dauerhafte Störquelle um {db} dB gedämpft",
+    beam_focus_waiting: "Sprach-Fokus – wartet auf eine Stimme; dauerhafte Störquelle um {db} dB gedämpft",
+    beam_focus_following: "Sprach-Fokus – folgt dem Sprecher ({p} % des Bands), Hintergrund um {db} dB gedämpft",
+    beam_focus_kept: "Sprach-Fokus – hält die Richtung des letzten Sprechers ({p} % des Bands), Hintergrund um {db} dB gedämpft",
+    echo_off: "Aus", echo_waiting: "Bereit – gerade keine Wiedergabe", echo_active: "{db} dB der Wiedergabe entfernt",
+    echo_learning: "Lernt den Raum…", echo_no_speaker: "Aus – kein Lautsprecher zum Mithören gefunden",
+    echo_transport: "Aus – der gewählte Ausgang ist der Mikrofon-Transport dieser App",
+    echo_not_found: "Aus – Audioausgang nicht gefunden", echo_unavailable: "Aus – PulseAudio nicht erreichbar",
+    noise_off: "Aus", agc_off: "Aus",
+    preview_live: "{w} · Kamera liefert {f} Bilder/s", preview_wait: "Warte auf ein Bild…", fps_badge: "{n} Bilder/s",
+    picture: "Bild", saturation: "Farbe", brightness: "Helligkeit", contrast: "Kontrast",
+    gamma: "Schatten (Gamma)", denoise: "Rauschfilter", denoise_0: "Aus", denoise_1: "Leicht", denoise_2: "Stark",
+    auto_levels: "Automatische Belichtungsstufen", white_balance: "Automatischer Weißabgleich",
+    picture_hint: "Änderungen wirken sofort und werden in die App-Konfiguration geschrieben. Sie gelten für Vorschau, MQTT-Kamera und go2rtc.",
+    picture_reset: "Auf Standard zurücksetzen", picture_error: "Die Bildeinstellungen konnten nicht gespeichert werden ({e}).",
+    picture_config_error: "Angewendet, aber nicht in die App-Konfiguration geschrieben; nach einem Neustart gelten dort die alten Werte.",
+    t_mode: "USB-Modus", t_layout: "Mikrofon-Layout", t_rate: "Gemessene Abtastrate", t_caps: "Kapsel-Pegel",
+    t_mics: "Aktive Kapseln", t_frames: "Bilder / verloren", t_rows: "Übersprungene Zeilen", t_buffer: "Verworfenes Audio",
+    t_adc: "Kapsel-Lautstärke", t_port: "USB-Port", t_node: "Video-Gerät", t_echo: "Echo-Referenz",
+    t_delay: "Echo-Verzögerung", t_model: "Kameramodell", t_firmware: "Firmware", auto: "automatisch",
+    t_controls: "Kamera-Regler (V4L2)", t_floor: "Grundrauschen (vor der automatischen Lautstärke)",
+  },
+};
+const lang = (navigator.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+const t = (key, values = {}) => (TEXT[lang][key] ?? TEXT.en[key] ?? key)
+  .replace(/\{(\w+)\}/g, (_, name) => values[name] ?? "");
+const $ = id => document.getElementById(id);
+
+document.documentElement.lang = lang;
+document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t(el.dataset.t); });
+document.title = t("title");
+
+function setState(element, kind, text) {
+  element.classList.remove("ok", "warn", "bad");
+  if (kind) element.classList.add(kind);
+  element.querySelector("span:last-child").textContent = text;
+}
+
+function showNote(element, text, kind = "") {
+  element.hidden = !text;
+  element.textContent = text || "";
+  element.classList.toggle("bad", kind === "bad");
+  element.classList.toggle("ok", kind === "ok");
+}
+
+const meterWidth = dbfs => `${Math.max(0, Math.min(100, (dbfs + 70) / 70 * 100))}%`;
+const db = value => (value === null || value === undefined || value <= -119) ? "–" : `${Math.round(value)} dB`;
+const modelName = model => model ? t("model_" + model) : "";
+
+/* ---- status cards ---- */
+
+let firmwareRequested = false;
+
+function renderCamera(status) {
+  const camera = status.camera;
+  const map = {
+    ready: ["ok", "cam_ready"], firmware: ["warn", "cam_firmware"],
+    no_firmware: ["bad", "cam_no_firmware"], missing: ["bad", "cam_missing"],
+  };
+  const [kind, key] = map[camera.state] || map.missing;
+  setState($("camera-state"), kind, t(key));
+  $("camera-detail").textContent = camera.state === "ready"
+    ? [modelName(camera.model), `USB ${camera.port}`, `05a9:${camera.pid}`].filter(Boolean).join(" · ") : "";
+  const error = camera.error_code ? t("cam_err_" + camera.error_code, { e: camera.error }) : "";
+  showNote($("camera-warning"), camera.state === "ready" ? "" : error, "bad");
+
+  const stored = Object.entries(camera.firmware || {});
+  $("firmware-card").hidden = !(firmwareRequested || camera.state === "no_firmware" || !stored.length);
+  $("firmware-files").textContent = stored.length
+    ? t("fw_files", { list: stored.map(([model, info]) => `${info.file} (${modelName(model)}, ${t(info.known ? "fw_known" : "fw_unknown")})`).join(", ") })
+    : t("fw_none");
+}
+
+function renderMicrophone(status) {
+  const mic = status.microphone, audio = status.audio;
+  const cameraOnly = status.mode === "camera", noMics = mic.state === "no_microphone";
+  $("microphone-card").hidden = cameraOnly;
+  $("enhance-card").hidden = cameraOnly || noMics;
+  $("compare-card").hidden = cameraOnly || noMics;
+  const kinds = { streaming: "ok", starting: "warn", waiting: "", silent: "bad", error: "bad", stopped: "", no_microphone: "warn" };
+  const label = t("mic_" + (mic.state || "waiting"));
+  setState($("mic-state"), kinds[mic.state] ?? "", mic.state === "error" ? `${label}: ${mic.message}` : label);
+  $("source").textContent = mic.source || "sony_playstation_vr_camera_input";
+
+  const live = audio && mic.state === "streaming";
+  const inputDb = live ? Math.max(...audio.channel_dbfs) : -120;
+  const outputDb = live ? audio.output_dbfs : -120;
+  $("meter-in").style.width = meterWidth(inputDb);
+  $("meter-out").style.width = meterWidth(outputDb);
+  $("level-in").textContent = db(inputDb);
+  $("level-out").textContent = db(outputDb);
+  $("speech").classList.toggle("on", Boolean(live && audio.speech));
+
+  let warning = "";
+  if (mic.state === "silent") warning = t("silent_hint");
+  else if (live && audio.clipping_percent > 0.05) warning = t("clipping", { p: audio.clipping_percent.toFixed(2) });
+  showNote($("mic-warning"), warning, mic.state === "silent" ? "bad" : "");
+}
+
+function renderEnhancement(status) {
+  const audio = status.audio, mic = status.microphone;
+  if (!audio) { ["beam", "echo", "noise", "agc"].forEach(id => { $(id).textContent = "–"; }); return; }
+  const lowered = Math.max(0, audio.suppression_db || 0).toFixed(0);
+  const focused = audio.focus ? Math.round(audio.focus.focused_percent) : 0;
+  $("beam").textContent = audio.beamformer === "sum" ? t("beam_sum")
+    : audio.beamformer === "focus"
+      ? t(focused < 20 ? "beam_focus_waiting" : audio.speech ? "beam_focus_following" : "beam_focus_kept",
+          { db: lowered, p: focused })
+    : audio.suppression_db >= 1 ? t("beam_adaptive", { db: lowered }) : t("beam_adaptive_idle");
+  const echo = audio.echo || {};
+  $("echo").textContent = mic.echo_error_code ? t("echo_" + mic.echo_error_code)
+    : !echo.enabled ? t("echo_off")
+    : !echo.playing ? t("echo_waiting")
+    : !echo.converged ? t("echo_learning")
+    : t("echo_active", { db: Math.max(0, echo.erle_db).toFixed(0) });
+  $("echo").title = mic.echo_error || "";
+  $("noise").textContent = audio.noise_suppression === "rnnoise"
+    ? `RNNoise ${audio.noise_strength} %` : t("noise_off");
+  $("agc").textContent = audio.auto_gain ? `${audio.gain_db >= 0 ? "+" : ""}${audio.gain_db.toFixed(0)} dB` : t("agc_off");
+}
+
+function renderDetails(status) {
+  const audio = status.audio, camera = status.camera, rows = [];
+  const add = (key, value) => { if (value !== undefined && value !== null && value !== "") rows.push([t(key), value]); };
+  add("t_model", [modelName(camera.model), camera.setting === "auto" ? `(${t("auto")})` : ""].filter(Boolean).join(" "));
+  add("t_firmware", Object.values(camera.firmware || {}).map(info => info.file).join(", "));
+  add("t_port", camera.port);
+  add("t_node", status.microphone.video_node);
+  if (status.capture) add("t_mode", `${status.capture.geometry} @ ${status.capture.fps.toFixed(0)} fps`);
+  if (status.microphone.adc) add("t_adc", `${status.microphone.adc.volume_db >= 0 ? "+" : ""}${status.microphone.adc.volume_db.toFixed(1)} dB`);
+  add("t_echo", status.microphone.echo_reference);
+  add("t_controls", (status.microphone.controls || [])
+    .map(c => `${c.name} ${c.value ?? "?"} (${c.minimum}–${c.maximum})`).join(" · "));
+  if (audio && audio.echo && audio.echo.enabled) add("t_delay", `${audio.echo.delay_ms} ms`);
+  if (audio) {
+    add("t_layout", audio.layout);
+    add("t_rate", `${audio.input_rate.toFixed(1)} Hz`);
+    add("t_caps", audio.channel_dbfs.map(v => db(v)).join(" · "));
+    if (audio.noise_floor_dbfs !== undefined) add("t_floor", db(audio.noise_floor_dbfs));
+    add("t_mics", `${audio.active_mics} / 4`);
+    add("t_frames", `${audio.frames} / ${audio.dropped_frames}`);
+    add("t_rows", String(audio.rows_skipped));
+    add("t_buffer", `${audio.output_dropped_ms} ms`);
+  }
+  $("tech").replaceChildren(...rows.flatMap(([k, v]) => {
+    const dt = document.createElement("dt"), dd = document.createElement("dd");
+    dt.textContent = k; dd.textContent = v; return [dt, dd];
+  }));
+}
+
+function renderOverall(status) {
+  const mic = status.microphone.state, cam = status.camera.state;
+  let kind = "", key = "waiting";
+  const micFine = status.mode === "camera" || mic === "streaming" || (mic === "no_microphone" && status.mode === "both");
+  if (cam === "ready" && micFine) { kind = "ok"; key = "ready"; }
+  else if (mic === "error" || mic === "silent" || cam === "no_firmware") { kind = "bad"; key = "problem"; }
+  else if (cam !== "missing") { kind = "warn"; key = "starting"; }
+  setState($("overall"), kind, t(key));
+}
+
+/* ---- preview with frame counter ---- */
+
+let previewPending = false, previewUrl = null, previewFps = 5, lastFrameId = null;
+const shownFrames = [];
+
+/* Frames that really reached the screen during the last three seconds. */
+function showFps(newFrame = false) {
+  const now = performance.now();
+  if (newFrame) shownFrames.push(now);
+  while (shownFrames.length && now - shownFrames[0] > 3000) shownFrames.shift();
+  const span = (shownFrames.at(-1) - shownFrames[0]) / 1000;
+  const rate = shownFrames.length > 1 && span > 0 ? (shownFrames.length - 1) / span : 0;
+  $("fps").hidden = shownFrames.length < 2;
+  $("fps").textContent = t("fps_badge", { n: rate.toFixed(rate < 10 ? 1 : 0) });
+}
+
+function showFrame(blob) {
+  const url = URL.createObjectURL(blob);
+  $("preview").src = url;
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = url;
+  showFps(true);
+}
+
+const previewWanted = () => !document.hidden && !$("preview-card").hidden;
+
+/*
+ * The preview arrives as one MJPEG response (multipart, one JPEG per part).
+ * Through the ingress proxy this keeps the full frame rate, where polling
+ * single pictures is limited by the round trip of every request.
+ */
+let stream = null, streamUnsupported = false, nextStreamAttempt = 0;
+const textDecoder = new TextDecoder();
+
+function findHeaderEnd(bytes) {
+  for (let i = 0; i + 3 < bytes.length; i++)
+    if (bytes[i] === 13 && bytes[i + 1] === 10 && bytes[i + 2] === 13 && bytes[i + 3] === 10) return i;
+  return -1;
+}
+
+/* Next complete JPEG in `bytes` as { jpeg, rest }, or null if more data is needed. */
+function takeFrame(bytes) {
+  const end = findHeaderEnd(bytes);
+  if (end < 0) return null;
+  const match = /content-length:\s*(\d+)/i.exec(textDecoder.decode(bytes.subarray(0, end)));
+  const start = end + 4;
+  if (!match) return { jpeg: null, rest: bytes.subarray(start) };
+  const length = Number(match[1]);
+  if (bytes.length < start + length) return null;
+  return { jpeg: bytes.slice(start, start + length), rest: bytes.subarray(start + length) };
+}
+
+async function runStream() {
+  const controller = new AbortController();
+  stream = controller;
+  try {
+    const response = await fetch("preview.mjpg", { cache: "no-store", signal: controller.signal });
+    if (!response.ok) throw new Error(response.status);
+    if (!response.body) { streamUnsupported = true; return; }
+    const reader = response.body.getReader();
+    let buffer = new Uint8Array(0);
+    while (previewWanted()) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const joined = new Uint8Array(buffer.length + value.length);
+      joined.set(buffer);
+      joined.set(value, buffer.length);
+      buffer = joined;
+      for (let frame = takeFrame(buffer); frame; frame = takeFrame(buffer)) {
+        buffer = frame.rest;
+        if (frame.jpeg) showFrame(new Blob([frame.jpeg], { type: "image/jpeg" }));
+      }
+    }
+    controller.abort();
+  } catch (error) {
+    if (!controller.signal.aborted) {
+      $("preview-state").textContent = t("preview_wait");
+      nextStreamAttempt = Date.now() + 2000;
+    }
+  } finally {
+    if (stream === controller) stream = null;
+  }
+}
+
+async function refreshPreview() {
+  if (previewPending || document.hidden || $("preview-card").hidden) return;
+  previewPending = true;
+  try {
+    const response = await fetch("still.jpg?t=" + Date.now(), { cache: "no-store" });
+    if (!response.ok) throw new Error(response.status);
+    const frameId = response.headers.get("X-Frame-Id");
+    if (frameId && frameId === lastFrameId) return;   /* polled faster than the camera */
+    lastFrameId = frameId;
+    showFrame(await response.blob());
+  } catch (error) {
+    $("preview-state").textContent = t("preview_wait");
+  } finally {
+    previewPending = false;
+  }
+}
+
+function renderPreview(status) {
+  $("preview-card").hidden = !status.preview_enabled;
+  const preview = status.preview;
+  if (!status.preview_enabled || !preview) return;
+  previewFps = preview.fps_limit || 5;
+  showFps();
+  $("preview-state").textContent = t("preview_live", { w: preview.size, f: (preview.fps || 0).toFixed(1) });
+}
+
+/* ---- picture controls ---- */
+
+const picture = $("picture");
+let pictureTimer = null, pictureLoaded = false;
+
+function showPictureValues(values) {
+  for (const [name, value] of Object.entries(values)) {
+    const field = picture.elements[name];
+    if (!field) continue;
+    if (field.type === "checkbox") field.checked = Boolean(value);
+    else field.value = value;
+    const output = picture.querySelector(`output[data-for="${name}"]`);
+    if (output) output.textContent = name === "brightness" ? (value > 0 ? "+" : "") + value : `${value} %`;
+  }
+}
+
+async function loadPicture() {
+  if (pictureLoaded || $("preview-card").hidden) return;
+  try {
+    const { values, controls } = await (await fetch("api/video", { cache: "no-store" })).json();
+    for (const [name, [, min, max]] of Object.entries(controls)) {
+      const field = picture.elements[name];
+      if (field && field.type === "range") { field.min = min; field.max = max; }
+    }
+    showPictureValues(values);
+    pictureLoaded = true;
+  } catch (error) { /* retried with the next status update */ }
+}
+
+function pictureValues() {
+  const values = {};
+  for (const field of picture.elements) {
+    if (!field.name) continue;
+    values[field.name] = field.type === "checkbox" ? (field.checked ? 1 : 0) : Number(field.value);
+  }
+  return values;
+}
+
+let configurationCheck = null;
+
+/* The app configuration is updated a moment after the last change; report if that failed. */
+function checkConfigurationLater() {
+  clearTimeout(configurationCheck);
+  configurationCheck = setTimeout(async () => {
+    try {
+      const { configuration } = await (await fetch("api/video", { cache: "no-store" })).json();
+      if (configuration === "pending") { checkConfigurationLater(); return; }
+      showNote($("picture-error"), configuration === "error" ? t("picture_config_error") : "", "bad");
+    } catch (error) { /* the next change checks again */ }
+  }, 3000);
+}
+
+async function sendPicture(path, body) {
+  try {
+    const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    showPictureValues((await response.json()).values);
+    showNote($("picture-error"), "");
+    checkConfigurationLater();
+  } catch (error) {
+    showNote($("picture-error"), t("picture_error", { e: error.message }), "bad");
+  }
+}
+
+picture.addEventListener("input", () => {
+  showPictureValues(pictureValues());
+  clearTimeout(pictureTimer);
+  pictureTimer = setTimeout(() => sendPicture("api/video", JSON.stringify(pictureValues())), 150);
+});
+$("picture-reset").addEventListener("click", () => sendPicture("api/video/reset", "{}"));
+
+/* ---- firmware upload ---- */
+
+$("firmware-show").addEventListener("click", () => {
+  firmwareRequested = true;
+  $("firmware-card").hidden = false;
+  $("firmware-card").scrollIntoView({ behavior: "smooth" });
+});
+
+$("firmware-upload").addEventListener("click", async () => {
+  const file = $("firmware-file").files[0], result = $("firmware-result");
+  if (!file) { showNote(result, t("firmware_choose"), "bad"); return; }
+  if (file.size > 2 * 1024 * 1024) { showNote(result, t("fw_err_size"), "bad"); return; }
+  $("firmware-upload").disabled = true;
+  try {
+    const model = $("firmware-model").value;
+    const response = await fetch("api/firmware" + (model ? "?model=" + model : ""), {
+      method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: file,
+    });
+    const answer = await response.json();
+    if (!response.ok) throw new Error(t("fw_err_" + answer.error, { e: answer.message || "" }));
+    showNote(result, t("firmware_saved", { file: answer.file, known: t(answer.known ? "fw_known" : "fw_unknown") }), "ok");
+    $("firmware-file").value = "";
+    update();
+  } catch (error) {
+    showNote(result, error.message, "bad");
+  } finally {
+    $("firmware-upload").disabled = false;
+  }
+});
+
+/* ---- link to the app configuration ---- */
+
+/*
+ * The page runs in Home Assistant's ingress frame, on Home Assistant's own
+ * origin. Current frontends show apps under /config/app/<slug>/; older ones
+ * (whose own address still starts with /hassio/) under /hassio/addon/<slug>/.
+ */
+function configurationPath(slug) {
+  let legacy = false;
+  try { legacy = window.top.location.pathname.startsWith("/hassio/"); } catch (error) { /* other origin */ }
+  return legacy ? `/hassio/addon/${slug}/config` : `/config/app/${slug}/config`;
+}
+
+/* Navigate inside the Home Assistant app instead of reloading it (like its own links). */
+function navigateHomeAssistant(path) {
+  try {
+    const top = window.top;
+    if (top === window || top.location.origin !== location.origin) return false;
+    top.history.pushState(null, "", path);
+    top.dispatchEvent(new top.CustomEvent("location-changed", { detail: { replace: false } }));
+    return true;
+  } catch (error) {
+    return false;   /* the plain link does the job */
+  }
+}
+
+function renderSettingsLink(slug) {
+  const link = $("settings-link");
+  if (slug && link.dataset.slug !== slug) {
+    link.href = configurationPath(slug);
+    link.dataset.slug = slug;
+  }
+  link.hidden = !slug;
+  $("settings-hint").hidden = Boolean(slug);
+}
+
+$("settings-link").addEventListener("click", event => {
+  if (navigateHomeAssistant($("settings-link").getAttribute("href"))) event.preventDefault();
+});
+
+/* ---- polling ---- */
+
+async function update() {
+  if (document.hidden) return;
+  try {
+    const status = await (await fetch("api/status", { cache: "no-store" })).json();
+    renderCamera(status);
+    renderMicrophone(status);
+    renderEnhancement(status);
+    renderSettingsLink(status.app_slug);
+    renderDetails(status);
+    renderOverall(status);
+    renderPreview(status);
+    loadPicture();
+  } catch (error) { /* the app may be restarting; try again next tick */ }
+}
+
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("source").textContent); } catch (error) {
+    const range = document.createRange(); range.selectNodeContents($("source"));
+    getSelection().removeAllRanges(); getSelection().addRange(range); document.execCommand("copy");
+  }
+  $("copy").textContent = t("copied");
+  setTimeout(() => { $("copy").textContent = t("copy"); }, 1500);
+});
+
+$("record").addEventListener("click", async () => {
+  const button = $("record");
+  button.disabled = true;
+  $("players").hidden = true;
+  try {
+    const start = await fetch("api/compare", { method: "POST" });
+    if (!start.ok) throw new Error(start.status);
+    const began = Date.now();
+    for (;;) {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      const left = Math.max(0, 4 - Math.floor((Date.now() - began) / 1000));
+      button.textContent = t("recording", { s: left });
+      const state = await (await fetch("api/compare", { cache: "no-store" })).json();
+      if (state.ready) break;
+      if (Date.now() - began > 12000) throw new Error("timeout");
+    }
+    const stamp = Date.now();
+    $("play-raw").src = "compare/raw.wav?t=" + stamp;
+    $("play-processed").src = "compare/processed.wav?t=" + stamp;
+    $("players").hidden = false;
+  } catch (error) {
+    showNote($("mic-warning"), `${t("mic_error")}: ${error.message}`, "bad");
+  } finally {
+    button.disabled = false;
+    button.textContent = t("record");
+  }
+});
+
+$("rows").addEventListener("click", async () => {
+  const button = $("rows");
+  button.disabled = true;
+  try {
+    await fetch("api/rows", { method: "POST" });
+    for (let i = 0; i < 40; i++) {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      const state = await (await fetch("api/rows", { cache: "no-store" })).json();
+      if (state.ready) { location.href = "rows.bin?t=" + Date.now(); break; }
+    }
+  } finally { button.disabled = false; }
+});
+
+update();
+setInterval(update, 1000);
+(function previewLoop() {
+  if (previewWanted()) {
+    if (streamUnsupported) refreshPreview();             /* very old browsers: single pictures */
+    else if (!stream && Date.now() >= nextStreamAttempt) runStream();
+  } else if (stream) {
+    stream.abort();
+  }
+  setTimeout(previewLoop, streamUnsupported ? Math.max(50, 1000 / (previewFps * 1.5)) : 250);
+})();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) update(); });
+</script>
+</body>
+</html>
