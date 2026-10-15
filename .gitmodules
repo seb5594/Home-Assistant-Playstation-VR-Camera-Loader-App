@@ -1,0 +1,3 @@
+[submodule "sony_playstation_vr_camera_loader/src/c/rnnoise"]
+	path = sony_playstation_vr_camera_loader/src/c/rnnoise
+	url = https://github.com/xiph/rnnoise.git
