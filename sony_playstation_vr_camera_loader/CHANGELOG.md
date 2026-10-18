@@ -21,6 +21,8 @@ Versions follow SemVer from now on; this is the release previously called beta4.
   following a talker or keeping the last direction, and *Speech enhancement* links straight to
   the app configuration.
 * Uses `bashio::app.options` where the base image has it (no deprecation warning in the log).
+* Fixed: the aarch64 image did not build. RNNoise 0.2 compiles its NEON code there, which includes
+  a header the release does not ship; the build script now supplies it.
 
 ## beta3
 

@@ -61,6 +61,18 @@ if ! model_is_known; then
     fi
 fi
 
+# RNNoise 0.2 compiles its NEON code on aarch64, and that code includes Opus' os_support.h, which
+# neither the release nor the git checkout contains. This stand-in provides what it uses.
+if [ ! -f src/os_support.h ]; then
+    cat > src/os_support.h <<'EOF'
+#ifndef OS_SUPPORT_H
+#define OS_SUPPORT_H
+#include "common.h"
+#define OPUS_CLEAR(dst, n) RNN_CLEAR(dst, n)
+#endif
+EOF
+fi
+
 # The release archive ships a generated configure; a git checkout needs autotools.
 if [ ! -x configure ]; then
     [ -f package_version ] || echo 'PACKAGE_VERSION="0.2"' > package_version   # no git inside the image build
