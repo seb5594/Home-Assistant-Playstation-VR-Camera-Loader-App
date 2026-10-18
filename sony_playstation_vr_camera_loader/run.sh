@@ -5,8 +5,8 @@
 
 # Bashio debug output would print Supervisor replies, including MQTT passwords.
 bashio::log.level info
-export LOG_LEVEL="$(bashio::config 'log_level')"
-export COLOR_LOGS=true
+LOG_LEVEL="$(bashio::config 'log_level')"
+export LOG_LEVEL COLOR_LOGS=true
 bashio::log.info 'Starting Sony PlayStation VR Camera Loader'
 
 # ---- configuration left behind by older releases -------------------------
@@ -94,7 +94,8 @@ else
   video=true
 fi
 export OUTPUT_MODE="$mode" PUBLISH_CAMERA_ENTITY="$entity"
-export VIDEO_FPS="$(option camera.video_fps 10)"
+VIDEO_FPS="$(option camera.video_fps 10)"
+export VIDEO_FPS
 
 capture_args=(--mode "$mode"
   --camera-model "$camera_model"
@@ -141,12 +142,18 @@ fi
 if [[ "$entity" == 'true' || -e /config/mqtt_discovery_active ]]; then
   if [[ "$(option camera.mqtt.auto_detect true)" == 'true' ]]; then
     if bashio::services.available 'mqtt'; then
-      export MQTT_HOST="$(bashio::services 'mqtt' 'host')" MQTT_PORT="$(bashio::services 'mqtt' 'port')"
-      export MQTT_USERNAME="$(bashio::services 'mqtt' 'username')" MQTT_PASSWORD="$(bashio::services 'mqtt' 'password')"
+      MQTT_HOST="$(bashio::services 'mqtt' 'host')"
+      MQTT_PORT="$(bashio::services 'mqtt' 'port')"
+      MQTT_USERNAME="$(bashio::services 'mqtt' 'username')"
+      MQTT_PASSWORD="$(bashio::services 'mqtt' 'password')"
+      export MQTT_HOST MQTT_PORT MQTT_USERNAME MQTT_PASSWORD
     fi
   else
-    export MQTT_HOST="$(option camera.mqtt.host '')" MQTT_PORT="$(option camera.mqtt.port 1883)"
-    export MQTT_USERNAME="$(option camera.mqtt.username '')" MQTT_PASSWORD="$(option camera.mqtt.password '')"
+    MQTT_HOST="$(option camera.mqtt.host '')"
+    MQTT_PORT="$(option camera.mqtt.port 1883)"
+    MQTT_USERNAME="$(option camera.mqtt.username '')"
+    MQTT_PASSWORD="$(option camera.mqtt.password '')"
+    export MQTT_HOST MQTT_PORT MQTT_USERNAME MQTT_PASSWORD
   fi
   if [[ -z "${MQTT_HOST:-}" ]]; then
     [[ "$entity" == 'true' ]] && bashio::log.warning 'MQTT camera: no broker found. Install an MQTT broker app or enter one manually.'
