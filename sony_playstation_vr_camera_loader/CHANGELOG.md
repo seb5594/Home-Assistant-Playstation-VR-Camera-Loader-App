@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0-beta4
+## 1.0.0-beta.4
 
 Versions follow SemVer from now on; this is the release previously called beta4.
 

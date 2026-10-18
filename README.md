@@ -1,7 +1,7 @@
 # Sony PlayStation VR Camera Loader
 
 <!-- badges:begin (generated from project metadata) -->
-[![Version](https://img.shields.io/badge/version-1.0.0-beta4-1877A5?style=for-the-badge)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0--beta.4-1877A5?style=for-the-badge)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/ci.yml?branch=main&label=builds)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/ci.yml)
 [![Release asset downloads](https://img.shields.io/github/downloads/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/total?label=release%20downloads)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/releases)
 [![Stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App?label=stars)](https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/stargazers)

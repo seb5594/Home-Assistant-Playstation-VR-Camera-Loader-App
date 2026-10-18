@@ -37,7 +37,9 @@ RUN set -eu; \
       *) echo "Unsupported architecture: ${BUILD_ARCH}" >&2; exit 1 ;; \
     esac; \
     curl -fL --retry 3 "https://github.com/AlexxIT/go2rtc/releases/download/v1.9.14/${artifact}" -o /usr/local/bin/go2rtc; \
-    echo "${sha}  /usr/local/bin/go2rtc" | sha256sum -c -; \
+    echo "${sha}  /usr/local/bin/go2rtc" > /tmp/go2rtc.sha256; \
+    sha256sum -c /tmp/go2rtc.sha256; \
+    rm /tmp/go2rtc.sha256; \
     chmod 755 /usr/local/bin/go2rtc
 
 # ---- runtime ------------------------------------------------------------------
@@ -60,7 +62,7 @@ RUN apk add --no-cache \
     # renovate: datasource=repology depName=alpine_3_24/jq
     jq=1.8.2-r0
 
-ARG BUILD_VERSION=1.0.0-beta4
+ARG BUILD_VERSION=1.0.0-beta.4
 ARG BUILD_ARCH=amd64
 LABEL io.hass.version="${BUILD_VERSION}" \
     io.hass.type="addon" \
