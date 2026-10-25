@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     # renovate: datasource=repology depName=alpine_3_24/libtool
     libtool=2.6.0-r1 \
     # renovate: datasource=repology depName=alpine_3_24/curl
-    curl=8.22.0-r0 \
+    curl=8.23.0-r0 \
     # renovate: datasource=repology depName=alpine_3_24/libjpeg-turbo-dev
     libjpeg-turbo-dev=3.1.3-r0 \
     # renovate: datasource=repology depName=alpine_3_24/linux-headers
@@ -58,7 +58,7 @@ RUN apk add --no-cache \
     # renovate: datasource=repology depName=alpine_3_24/libturbojpeg
     libturbojpeg=3.1.3-r0 \
     # renovate: datasource=repology depName=alpine_3_24/ffmpeg
-    ffmpeg=8.1.2-r0 \
+    ffmpeg=8.1.3-r0 \
     # renovate: datasource=repology depName=alpine_3_24/jq
     jq=1.8.2-r0
 
