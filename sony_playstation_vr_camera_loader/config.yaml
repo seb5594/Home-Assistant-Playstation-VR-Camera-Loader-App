@@ -1,6 +1,6 @@
 name: Sony PlayStation VR Camera Loader
 description: Turns the PlayStation (VR) Camera into a far-field voice microphone for Assist, with an optional video preview.
-version: "1.0.0-beta.4"
+version: "1.0.0-beta.5"
 slug: sony_playstation_vr_camera_loader
 stage: experimental
 init: false

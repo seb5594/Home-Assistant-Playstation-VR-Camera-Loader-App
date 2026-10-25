@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-beta.5
+
+* Dependencies: the Home Assistant base image is now `3.24-2026.10.1`.
+
 ## 1.0.0-beta.4
 
 Versions follow SemVer from now on; this is the release previously called beta4.

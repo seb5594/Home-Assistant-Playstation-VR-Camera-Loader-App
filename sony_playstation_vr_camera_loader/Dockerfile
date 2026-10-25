@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.10.0
+ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.10.1
 
 # ---- build stage: RNNoise, the capture engine and go2rtc ----------------------
 FROM ${BUILD_FROM} AS builder
@@ -62,7 +62,7 @@ RUN apk add --no-cache \
     # renovate: datasource=repology depName=alpine_3_24/jq
     jq=1.8.2-r0
 
-ARG BUILD_VERSION=1.0.0-beta.4
+ARG BUILD_VERSION=1.0.0-beta.5
 ARG BUILD_ARCH=amd64
 LABEL io.hass.version="${BUILD_VERSION}" \
     io.hass.type="addon" \
