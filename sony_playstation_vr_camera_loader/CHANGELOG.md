@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-beta.6
+
+* Update the base image and packaged dependencies to available release versions; restore reproducible CI builds.
+
 ## 1.0.0-beta.5
 
 * Dependencies: the Home Assistant base image is now `3.24-2026.10.1`; curl 8.23.0 and ffmpeg 8.1.3 follow it (the old ffmpeg no longer fits the new base).
