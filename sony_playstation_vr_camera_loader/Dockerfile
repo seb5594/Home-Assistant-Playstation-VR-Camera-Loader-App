@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.10.1
+ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.10.3
 
 # ---- build stage: RNNoise, the capture engine and go2rtc ----------------------
 FROM ${BUILD_FROM} AS builder
@@ -48,7 +48,7 @@ FROM ${BUILD_FROM}
 # ffmpeg is only used by go2rtc to offer H.264 to WebRTC/RTSP viewers.
 RUN apk add --no-cache \
     # renovate: datasource=repology depName=alpine_3_24/python3
-    python3=3.14.8-r0 \
+    python3=3.14.10-r1 \
     # renovate: datasource=repology depName=alpine_3_24/py3-paho-mqtt
     py3-paho-mqtt=1.6.1-r4 \
     # renovate: datasource=repology depName=alpine_3_24/pulseaudio-utils
@@ -62,7 +62,7 @@ RUN apk add --no-cache \
     # renovate: datasource=repology depName=alpine_3_24/jq
     jq=1.8.2-r0
 
-ARG BUILD_VERSION=1.0.0-beta.5
+ARG BUILD_VERSION=1.0.0-beta.6
 ARG BUILD_ARCH=amd64
 LABEL io.hass.version="${BUILD_VERSION}" \
     io.hass.type="addon" \
