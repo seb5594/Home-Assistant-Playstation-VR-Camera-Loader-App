@@ -36,7 +36,7 @@ builds on that comes from others. Inside the app image, the licence texts are in
 
 ### Alpine packages
 
-The image is built on Home Assistant's Alpine base image (`ghcr.io/home-assistant/base`, see
+The image is built on Home Assistant's Alpine base image (`ghcr.io/seb5594/home-assistant-base`, see
 `BUILD_FROM` in the `Dockerfile`) and installs Alpine packages at the versions pinned there:
 `libturbojpeg` from [libjpeg-turbo](https://libjpeg-turbo.org/) (IJG, BSD-3-Clause and zlib licences, linked
 dynamically by `psvr-capture`), FFmpeg, Python 3, paho-mqtt, PulseAudio and ALSA utilities.

@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.10.3
+ARG BUILD_FROM=ghcr.io/seb5594/home-assistant-base:3.24-2026.11.0@sha256:d116b9e5b612e6fcd997c86642d21b61953fcbe390c39c9b03443a577ed5e2a6
 
 # ---- build stage: RNNoise, the capture engine and go2rtc ----------------------
 FROM ${BUILD_FROM} AS builder
