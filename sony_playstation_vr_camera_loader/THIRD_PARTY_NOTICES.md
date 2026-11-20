@@ -21,9 +21,8 @@ builds on that comes from others. Inside the app image, the licence texts are in
 
 ### go2rtc
 
-* Source: <https://github.com/AlexxIT/go2rtc>, release binary **v1.9.14**, downloaded at build
-  time and verified by SHA-256 (see `Dockerfile`), unmodified.
-* Use: MJPEG, RTSP and WebRTC streams of the camera picture.
+* Source: <https://github.com/AlexxIT/go2rtc>. The Dockerfile takes the executable from the
+  official versioned multi-architecture image `ghcr.io/alexxit/go2rtc`.
 * Licence: MIT, Copyright (c) 2022 Alexey Khit. Full text: `licenses/go2rtc-MIT.txt`.
 
 ### AK5703 register values from PSCam4Windows

@@ -1,8 +1,10 @@
 ARG BUILD_FROM=ghcr.io/seb5594/home-assistant-base:3.24-2026.11.0
 
-# ---- build stage: RNNoise, the capture engine and go2rtc ----------------------
+# The official versioned image lets BuildKit select and verify the target-platform binary.
+FROM ghcr.io/alexxit/go2rtc:1.9.15 AS go2rtc
+
+# ---- build stage: RNNoise and the capture engine ------------------------------
 FROM ${BUILD_FROM} AS builder
-ARG TARGETARCH
 RUN apk add --no-cache \
     build-base \
     autoconf \
@@ -22,18 +24,6 @@ RUN sh /src/c/build-rnnoise.sh /src/c/rnnoise /usr/local
 RUN make -C /src/c/psvr-capture clean \
     && make -C /src/c/psvr-capture -j"$(nproc)" CFLAGS="-O2 -I/usr/local/include" LDFLAGS="-L/usr/local/lib" \
     && make -C /src/c/psvr-capture install PREFIX=/usr/local
-
-RUN set -eu; \
-    case "${TARGETARCH}" in \
-      amd64) artifact=go2rtc_linux_amd64; sha=32d616af226bd731678ffde328b94cfb94e30339bfefc469cfb76323144615a6 ;; \
-      arm64) artifact=go2rtc_linux_arm64; sha=359fabade8a7a51e81a55fe6df6b0ef81764a5e1d63179577534eaaa71904b50 ;; \
-      *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
-    esac; \
-    curl -fL --retry 3 "https://github.com/AlexxIT/go2rtc/releases/download/v1.9.14/${artifact}" -o /usr/local/bin/go2rtc; \
-    echo "${sha}  /usr/local/bin/go2rtc" > /tmp/go2rtc.sha256; \
-    sha256sum -c /tmp/go2rtc.sha256; \
-    rm /tmp/go2rtc.sha256; \
-    chmod 755 /usr/local/bin/go2rtc
 
 # ---- runtime ------------------------------------------------------------------
 FROM ${BUILD_FROM}
@@ -55,8 +45,10 @@ LABEL io.hass.version="${BUILD_VERSION}" \
     org.opencontainers.image.version="${BUILD_VERSION}" \
     org.opencontainers.image.source="https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App"
 
-COPY --from=builder /usr/local/bin/psvr-capture /usr/local/bin/go2rtc /usr/local/bin/
-RUN psvr-capture --help > /tmp/psvr-help && grep -q -- '--audio' /tmp/psvr-help && rm /tmp/psvr-help
+COPY --from=builder /usr/local/bin/psvr-capture /usr/local/bin/
+COPY --from=go2rtc /usr/local/bin/go2rtc /usr/local/bin/
+RUN psvr-capture --help > /tmp/psvr-help && grep -q -- '--audio' /tmp/psvr-help && rm /tmp/psvr-help \
+    && go2rtc -version
 
 WORKDIR /app
 COPY LICENSE THIRD_PARTY_NOTICES.md /app/licenses/
