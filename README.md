@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/static/v1?label=stage&amp;message=experimental&amp;color=2F855A&amp;style=flat" alt="stage" height="20">
   <img src="https://img.shields.io/static/v1?label=ingress&amp;message=enabled&amp;color=7C3AED&amp;style=flat" alt="ingress" height="20">
   <img src="https://img.shields.io/static/v1?label=arch%20%26%20size&amp;message=amd64%2087.5%20%C2%B7%20aarch64%2083.3%20MiB&amp;color=157F71&amp;style=flat" alt="arch &amp; size" height="20">
+  <a href="https://github.com/seb5594/home-assistant-base-multi-arch"><img src="https://img.shields.io/static/v1?label=base%20image&amp;message=3.24-2026.11.0&amp;color=1877A5&amp;style=flat" alt="base image" height="20"></a>
   <img src="https://img.shields.io/static/v1?label=mounts%20%28read-write%29&amp;message=addon_config&amp;color=B45309&amp;style=flat" alt="mounts (read-write)" height="20">
   <img src="https://img.shields.io/static/v1?label=local%20disks&amp;message=attached&amp;color=1877A5&amp;style=flat" alt="local disks" height="20"><br>
   <a href="https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App/ci.yml?branch=main&amp;label=checks&amp;style=flat" alt="checks" height="20"></a>
