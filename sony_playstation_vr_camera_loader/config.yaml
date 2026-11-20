@@ -5,8 +5,11 @@ slug: sony_playstation_vr_camera_loader
 stage: experimental
 init: false
 arch:
-  - amd64
   - aarch64
+  - amd64
+  - armv7
+  - armhf
+  - i386
 url: https://github.com/seb5594/Home-Assistant-Playstation-VR-Camera-Loader-App
 udev: true
 usb: true
